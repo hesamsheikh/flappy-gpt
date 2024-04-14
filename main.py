@@ -1,8 +1,9 @@
 ## main file for running the game and visualization
+import time
 
 import pygame
 import sys
-
+from chat import next_move
 
 
 # Define colors
@@ -18,22 +19,26 @@ HEIGHT = 10
 SCREEN_SIZE = (WIDTH * BLOCK_SIZE, HEIGHT * BLOCK_SIZE)
 
 # Define game state string
-game_state_str = "\
-000000000000000|000\n\
-000000000000000|000\n\
-000000000000000|000\n\
-0000000000000000000\n\
-000>000000000000000\n\
-0000000000000000000\n\
-000000000000000|000\n\
-000000000000000|000\n\
-000000000000000|000\n"
+game_start_state = "\
+000000000000|000\n\
+000000000000|000\n\
+000000000000|000\n\
+0000000000000000\n\
+000>000000000000\n\
+0000000000000000\n\
+000000000000|000\n\
+000000000000|000\n\
+000000000000|000\n"
 
 
 # Load and resize images
 def load_and_resize_image(image_path):
     image = pygame.image.load(image_path).convert_alpha()
     return pygame.transform.scale(image, (BLOCK_SIZE, BLOCK_SIZE))
+
+def string_to_game_state(game_string):
+    game_state = [[char for char in row] for row in game_string.strip().split('\n') if row]
+    return game_state
 
 # Initialize Pygame
 pygame.init()
@@ -45,9 +50,6 @@ background_image = load_and_resize_image(r"assets/sky.png")
 pipe_image = load_and_resize_image(r"assets/pipe.png")
 bird_image = load_and_resize_image(r"assets/bird.png")
 
-# Parse game state string
-game_state = [[char for char in row] for row in game_state_str.split('\n') if row]
-
 # Map characters to images
 char_to_image = {
     '0': background_image,
@@ -55,20 +57,30 @@ char_to_image = {
     '>': bird_image
 }
 
-# Main loop
+current_state = game_start_state
+
+
 while True:
+    steps = 0
+
+    if current_state == 'DEAD' : break
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
 
-    ## our logic for running the game
-
+    # Parse game string state
+    parsed_state = string_to_game_state(current_state)
 
     # Draw game state
-    for y, row in enumerate(game_state):
+    for y, row in enumerate(parsed_state):
         for x, char in enumerate(row):
             image = char_to_image[char]
             screen.blit(image, (x * BLOCK_SIZE, y * BLOCK_SIZE))
 
     pygame.display.flip()
+
+    ## our logic for running the game
+    current_state = next_move(current_state)
+    time.sleep(1)
+    ...

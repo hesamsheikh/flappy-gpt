@@ -7,30 +7,27 @@ from langchain.prompts import (
 )
 from langchain.chat_models import ChatOpenAI
 from dotenv import load_dotenv
-from langchain.document_loaders import json_loader
-# from langchain.prompts import load_prompt
-
+from game_state_examples import *
 
 load_dotenv(dotenv_path=".env")
 llm = ChatOpenAI(model="gpt-4-turbo", temperature=0.2)
 
-cur_state = "\
-            00000000000000000000000|000\n\
-            00000000000000000000000|000\n\
-            00000000000000000000000|000\n\
-            00000000000000000000000|000\n\
-            00000000000000000000000|000\n\
-            000>00000000000000000000000\n\
-            000000000000000000000000000\n\
-            00000000000000000000000|000\n\
-            00000000000000000000000|000\n\
-            00000000000000000000000|000\n\
-"
 command = 'NEXT'
 
-human_prompt_template = PromptTemplate(
-    template="COMMAND: {command} \n, current state of the game: \n {cur_state}",
-    input_variables=["command", "cur_state"],
+examples = [
+    {"input": "COMMAND: UP \n, current state of the game: \n {INIT_STATE}", "output": {INIT_UP_STATE}},
+    {"input": "COMMAND: NEXT \n, current state of the game: \n {INIT_UP_STATE}}", "output": {INIT_UP_NEXT_STATE}},
+]
+example_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("human", "{input}"),
+        ("ai", "{output}"),
+    ]
+)
+
+few_shot_prompt = FewShotChatMessagePromptTemplate(
+    example_prompt=example_prompt,
+    examples=examples,
 )
 
 prompt = ChatPromptTemplate.from_messages(
@@ -45,9 +42,9 @@ prompt = ChatPromptTemplate.from_messages(
         and you should generate the next frame with the pipes coming 1 unit to the left and\
         the bird going down 1 unit because of gravity. Obviously, the bird doesn't move in the X axis, but only the Y axis,\
         and only the pipes move to the left each time. to recap, you will only receive 2 kinds of commands:\
-        'UP', 'NEXT'. You will recieve them coupled with the current state of the game that you can use to \
-        generate the next state.")
-        ,
+        'UP', 'NEXT'. You will receive them coupled with the current state of the\
+        game that you can use to generate the next state."),
+        few_shot_prompt,
         ("human", "COMMAND: {command} \n, current state of the game: \n {cur_state}")
     ]
 )
@@ -55,17 +52,20 @@ prompt = ChatPromptTemplate.from_messages(
 
 prompt_and_model = prompt | llm
 output = ''
-steps = 0
 
-while(True):
-    output = prompt_and_model.invoke({"command": command , "cur_state":cur_state})
+def next_move(cur_state, user_command):
+    output = prompt_and_model.invoke({"command": user_command , "cur_state":cur_state})
     cur_state = output.content[5:-5].strip()
-    steps += 1
+    if output.content == 'DEAD':
+        return 'DEAD'
+
     for row in cur_state.split("            "):
         print(row)
     print()
-    if output.content == 'DEAD':
-        break
-    time.sleep(1)
 
+    return cur_state
+
+if __name__ == "__main__":
+    output = prompt_and_model.invoke({"command": 'what is my name', "cur_state": ""})
+    ...
 ...
