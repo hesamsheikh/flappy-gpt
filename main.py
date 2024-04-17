@@ -4,7 +4,7 @@ import time
 import pygame
 import sys
 from chat import next_move
-
+from game_prompts import INIT_STATE
 
 # Define colors
 BLACK = (0, 0, 0)
@@ -13,23 +13,11 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
 # Define constants
-BLOCK_SIZE = 55
-WIDTH = 22
-HEIGHT = 10
+BLOCK_SIZE = 65
+WIDTH = 11
+HEIGHT = 9
 SCREEN_SIZE = (WIDTH * BLOCK_SIZE, HEIGHT * BLOCK_SIZE)
-
-# Define game state string
-game_start_state = "\
-000000000000|000\n\
-000000000000|000\n\
-000000000000|000\n\
-0000000000000000\n\
-000>000000000000\n\
-0000000000000000\n\
-000000000000|000\n\
-000000000000|000\n\
-000000000000|000\n"
-
+clock = pygame.time.Clock()
 
 # Load and resize images
 def load_and_resize_image(image_path):
@@ -37,7 +25,7 @@ def load_and_resize_image(image_path):
     return pygame.transform.scale(image, (BLOCK_SIZE, BLOCK_SIZE))
 
 def string_to_game_state(game_string):
-    game_state = [[char for char in row] for row in game_string.strip().split('\n') if row]
+    game_state = [[char for char in row if char not in ['{','}',"'", "\\", "n"]] for row in game_string.strip().split('\n') if row]
     return game_state
 
 # Initialize Pygame
@@ -57,11 +45,27 @@ char_to_image = {
     '>': bird_image
 }
 
-current_state = game_start_state
+current_state = INIT_STATE
 
+# Main loop
+command = None
+running = True
+steps = 0
+pygame.event.clear()
 
-while True:
-    steps = 0
+while running:
+    event = pygame.event.wait()
+    if event.type == pygame.QUIT:
+        running = False
+    elif event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_UP:
+            command = "UP"
+        elif event.key == pygame.K_RIGHT:
+            command = "NEXT"
+    else:
+        pass
+
+    steps += 1
 
     if current_state == 'DEAD' : break
     for event in pygame.event.get():
@@ -70,17 +74,26 @@ while True:
             sys.exit()
 
     # Parse game string state
+    current_state = current_state.replace("\\n", "\n")
     parsed_state = string_to_game_state(current_state)
-
     # Draw game state
     for y, row in enumerate(parsed_state):
         for x, char in enumerate(row):
+            if char in ['{','}',"'", "\\", "n"]: continue
             image = char_to_image[char]
             screen.blit(image, (x * BLOCK_SIZE, y * BLOCK_SIZE))
 
     pygame.display.flip()
 
-    ## our logic for running the game
-    current_state = next_move(current_state)
-    time.sleep(1)
-    ...
+    if command:
+        ## our logic for running the game
+        current_state = next_move(current_state, user_command=command)
+
+    # Reset command
+    command = None
+
+    # Control frame rate
+    clock.tick(30)
+
+pygame.quit()
+sys.exit()
