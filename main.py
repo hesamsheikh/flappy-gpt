@@ -51,7 +51,6 @@ current_state = INIT_STATE
 command = None
 running = True
 steps = 0
-pygame.event.clear()
 
 while running:
     event = pygame.event.wait()
