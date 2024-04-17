@@ -1,6 +1,3 @@
-# flappy-gpt
-GPT as Game Engine to Run Flappy Bird
-=======
 # 🦜 Flappy Bird GPT Game Engine
 ![](assets/demo.png)
 
