@@ -1,13 +1,13 @@
-import time
-import langchain
 from langchain.prompts import (
     ChatPromptTemplate,
     FewShotChatMessagePromptTemplate,
-    PromptTemplate
 )
 from langchain.chat_models import ChatOpenAI
 from dotenv import load_dotenv
-from game_prompts import *
+from prompts import *
+import langchain
+langchain.verbose = True
+langchain.debug = True
 
 load_dotenv(dotenv_path=".env")
 llm = ChatOpenAI(model="gpt-4-turbo", temperature=0.5)
@@ -42,21 +42,15 @@ prompt = ChatPromptTemplate.from_messages(
 
 
 prompt_and_model = prompt | llm
-output = ''
 
+output = ''
 def next_move(cur_state, user_command):
-    output = prompt_and_model.invoke({"command": user_command , "cur_state":cur_state})
+    output = prompt_and_model.invoke({
+        "command": user_command,
+        "cur_state":cur_state})
+    
     cur_state = output.content.strip()
     if output.content == 'DEAD':
         return 'DEAD'
 
-    # for row in cur_state.split("            "):
-    #     print(row)
-    # print()
-
     return cur_state
-
-if __name__ == "__main__":
-    output = prompt_and_model.invoke({"command": 'what is my name', "cur_state": ""})
-    ...
-...

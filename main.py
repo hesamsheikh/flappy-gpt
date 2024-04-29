@@ -4,7 +4,12 @@ import time
 import pygame
 import sys
 from chat import next_move
-from game_prompts import INIT_STATE
+from prompts import INIT_STATE
+import os
+
+os.makedirs('screenshots', exist_ok=True)
+
+DISPLAY_BLOCKS = False
 
 # Define colors
 BLACK = (0, 0, 0)
@@ -18,6 +23,10 @@ WIDTH = 11
 HEIGHT = 9
 SCREEN_SIZE = (WIDTH * BLOCK_SIZE, HEIGHT * BLOCK_SIZE)
 clock = pygame.time.Clock()
+
+pygame.font.init()  # Initialize font module
+font_size = 30  # Choose an appropriate font size
+game_font = pygame.font.Font(None, font_size)  # Use default font; you can also specify a path to a .ttf file
 
 # Load and resize images
 def load_and_resize_image(image_path):
@@ -61,6 +70,10 @@ while running:
             command = "UP"
         elif event.key == pygame.K_RIGHT:
             command = "NEXT"
+        elif event.key == pygame.K_s:  # Check if 'S' is pressed
+            screenshot_path = os.path.join('screenshots', f'screenshot_{int(time.time())}.png')
+            pygame.image.save(screen, screenshot_path)
+            print(f"Screenshot saved to {screenshot_path}")
     else:
         pass
 
@@ -81,6 +94,15 @@ while running:
             if char in ['{','}',"'", "\\", "n"]: continue
             image = char_to_image[char]
             screen.blit(image, (x * BLOCK_SIZE, y * BLOCK_SIZE))
+
+            if DISPLAY_BLOCKS:
+                # Draw red rectangle around the block
+                pygame.draw.rect(screen, (255, 0, 0), (x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE), 3)  # 3 is the thickness of the outline
+
+                # Render the character in the center of the block
+                text_surface = game_font.render(char, True, (255, 0, 0))  # True for antialiasing
+                text_rect = text_surface.get_rect(center=((x * BLOCK_SIZE + BLOCK_SIZE // 2), (y * BLOCK_SIZE + BLOCK_SIZE // 2)))
+                screen.blit(text_surface, text_rect)
 
     pygame.display.flip()
 
