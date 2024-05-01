@@ -58,6 +58,7 @@ current_state = INIT_STATE
 
 # Main loop
 command = None
+display_command = "Start State"
 running = True
 steps = 0
 
@@ -74,6 +75,8 @@ while running:
             screenshot_path = os.path.join('screenshots', f'screenshot_{int(time.time())}.png')
             pygame.image.save(screen, screenshot_path)
             print(f"Screenshot saved to {screenshot_path}")
+        display_command = command if command else "No command"
+
     else:
         pass
 
@@ -104,6 +107,10 @@ while running:
                 text_rect = text_surface.get_rect(center=((x * BLOCK_SIZE + BLOCK_SIZE // 2), (y * BLOCK_SIZE + BLOCK_SIZE // 2)))
                 screen.blit(text_surface, text_rect)
 
+    # Display the current command at the bottom of the screen
+    command_surface = game_font.render(f"Command: {display_command}", True, BLACK)
+    command_rect = command_surface.get_rect(center=(SCREEN_SIZE[0] // 2, SCREEN_SIZE[1] - font_size // 2))
+    screen.blit(command_surface, command_rect)
     pygame.display.flip()
 
     if command:
