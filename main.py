@@ -9,7 +9,7 @@ import os
 
 os.makedirs('screenshots', exist_ok=True)
 
-DISPLAY_BLOCKS = False
+DISPLAY_BLOCKS = True
 
 # Define colors
 BLACK = (0, 0, 0)
